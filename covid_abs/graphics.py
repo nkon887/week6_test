@@ -79,12 +79,17 @@ def update_statistics(sim, statistics):
     stats1 = sim.get_statistics(kind='info')
     statistics['info'].append(stats1)
     df1 = pd.DataFrame(statistics['info'], columns=[k for k in stats1.keys()])
-
+    
     stats2 = sim.get_statistics(kind='ecom')
     statistics['ecom'].append(stats2)
     df2 = pd.DataFrame(statistics['ecom'], columns=[k for k in stats2.keys()])
+    i=df1.index.values[0]
+    if i!=0:
+        Rt=df1['Infected'].values[0]*3*i
+    else:
+        Rt=df1['Infected'].values[0] 
 
-    return (df1, df2)
+    return (df1, df2, Rt)
 
 
 def clear(scat, linhas1, linhas2):
@@ -125,7 +130,7 @@ def update(sim, scat, linhas1, linhas2, statistics):
     scat.set_facecolor([color2(a) for a in sim.get_population()])
     scat.set_offsets(sim.get_positions())
 
-    df1, df2 = update_statistics(sim, statistics)
+    df1, df2, Rt = update_statistics(sim, statistics)
 
     for col in linhas1.keys():
         linhas1[col].set_data(df1.index.values, df1[col].values)
@@ -170,8 +175,8 @@ def execute_simulation(sim, **kwargs):
     scat = ax[0].scatter(pos[:, 0], pos[:, 1],
                          c=[color2(a) for a in sim.get_population()])
 
-    df1, df2 = update_statistics(sim, statistics)
-
+    df1, df2, Rt = update_statistics(sim, statistics)
+    ax[1].text(10, 2.5, 'R ={:.2f}'.format(Rt), fontsize=14)
     ax[1].set_title('Contagion Evolution')
     ax[1].set_xlim((0, frames))
 
@@ -187,7 +192,8 @@ def execute_simulation(sim, **kwargs):
     ax[1].set_ylabel("% of Population")
 
     handles, labels = ax[1].get_legend_handles_labels()
-    lgd = ax[1].legend(handles, labels, loc='top right') #2, bbox_to_anchor=(0, 0))
+    lgd = ax[1].legend(handles, labels, loc='top right') #2, bbox_to_anchor=(0, 0)) 
+  
 
     linhas2 = {}
 
@@ -255,7 +261,7 @@ def update_graph(sim, ax, linhas1, ax1, linhas2, ax2, statistics):
 
     draw_graph(sim, ax=ax)
 
-    df1, df2 = update_statistics(sim, statistics)
+    df1, df2, Rt = update_statistics(sim, statistics)
 
     for col in linhas1.keys():
         linhas1[col].set_data(df1.index.values, df1[col].values)
@@ -298,7 +304,7 @@ def execute_graphsimulation(sim, **kwargs):
 
     draw_graph(sim, ax=ax[0])
 
-    df1, df2 = update_statistics(sim, statistics)
+    df1, df2, Rt = update_statistics(sim, statistics)
 
     tickslabels = [str(i//24) for i in range(0, frames, tick_unit)]
 
